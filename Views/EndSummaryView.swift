@@ -35,6 +35,125 @@ struct EndSummaryView: View {
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(8)
                 
+                // Bronco Configuration
+                if trip.vehicleData.vehicleType == .bronco {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "car.fill")
+                                .foregroundColor(.blue)
+                            Text("Bronco Configuration")
+                                .font(.headline)
+                        }
+                        
+                        if let mode = trip.vehicleData.terrainMode {
+                            HStack {
+                                Text("Terrain Mode:")
+                                Spacer()
+                                Text(mode.rawValue)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        
+                        if let drive = trip.vehicleData.driveMode {
+                            HStack {
+                                Text("Drive Mode:")
+                                Spacer()
+                                Text(drive.rawValue)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        
+                        if trip.vehicleData.frontLockerEngaged || trip.vehicleData.rearLockerEngaged {
+                            HStack {
+                                Text("Lockers:")
+                                Spacer()
+                                Text("\(trip.vehicleData.frontLockerEngaged ? "Front " : "")\(trip.vehicleData.rearLockerEngaged ? "Rear" : "")")
+                                    .foregroundColor(.orange)
+                            }
+                        }
+                        
+                        if trip.vehicleData.swayBarDisconnected {
+                            HStack {
+                                Text("Sway Bar:")
+                                Spacer()
+                                Text("Disconnected")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        
+                        if trip.vehicleData.trailControlActive {
+                            HStack {
+                                Text("Trail Control:")
+                                Spacer()
+                                Text("Active")
+                                    .foregroundColor(.green)
+                            }
+                        }
+                        
+                        if trip.vehicleData.winchUsed {
+                            HStack {
+                                Text("Winch:")
+                                Spacer()
+                                Text("Used")
+                                    .foregroundColor(.red)
+                            }
+                        }
+                        
+                        if let fuel = trip.vehicleData.fuelLevel {
+                            HStack {
+                                Text("Fuel Level:")
+                                Spacer()
+                                Text("\(Int(fuel))%")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        
+                        HStack {
+                            Text("Data Source:")
+                            Spacer()
+                            Text(trip.vehicleData.dataSource.rawValue)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding()
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(8)
+                }
+                
+                // Camp Sites
+                if !trip.campSites.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Camp Sites")
+                            .font(.headline)
+                        ForEach(trip.campSites) { site in
+                            NavigationLink(destination: CampSiteDetailView(campSite: site)) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(site.name)
+                                        .font(.subheadline.bold())
+                                    HStack {
+                                        ForEach(0..<site.starRating, id: \.self) { _ in
+                                            Image(systemName: "star.fill")
+                                                .foregroundColor(.yellow)
+                                                .font(.caption)
+                                        }
+                                    }
+                                    Text(site.timestamp.formatted(date: .omitted, time: .shortened))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.purple.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.05))
+                    .cornerRadius(8)
+                }
+                
                 // Elevation Profile
                 if !trip.points.isEmpty {
                     Chart {
@@ -57,8 +176,12 @@ struct EndSummaryView: View {
                 .buttonStyle(.borderedProminent)
                 
                 Button("Export PDF") {
-                    if let image = mapSnapshot {
-                        pdfData = PDFExporter.generatePDF(for: trip, mapSnapshot: image)
+                    if let image = mapSnapshot, let pdf = PDFExporter.generatePDF(for: trip, mapSnapshot: image) {
+                        pdfData = pdf
+                    } else {
+                        // Fallback: create a simple placeholder image if map snapshot failed
+                        let placeholder = UIImage(systemName: "map")?.withTintColor(.orange, renderingMode: .alwaysOriginal) ?? UIImage()
+                        pdfData = PDFExporter.generatePDF(for: trip, mapSnapshot: placeholder)
                     }
                 }
                 .buttonStyle(.bordered)

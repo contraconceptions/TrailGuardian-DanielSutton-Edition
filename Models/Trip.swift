@@ -10,6 +10,8 @@ struct Trip: Identifiable, Codable {
     var weatherSnapshots: [WeatherSnapshot] = []
     var telemetryStats: TelemetryStats = TelemetryStats()
     var difficultyRatings: DifficultyRatings = DifficultyRatings()
+    var vehicleData: VehicleData = VehicleData()
+    var campSites: [CampSite] = []
     
     static func new() -> Trip {
         Trip(

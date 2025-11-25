@@ -20,17 +20,27 @@ class TripStore: ObservableObject {
     private func save() {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        if let data = try? encoder.encode(trips) {
-            try? data.write(to: saveURL)
+        do {
+            let data = try encoder.encode(trips)
+            try data.write(to: saveURL, options: [.atomic])
+        } catch {
+            print("Failed to save trips: \(error.localizedDescription)")
         }
     }
     
     private func load() {
+        guard FileManager.default.fileExists(atPath: saveURL.path) else {
+            return
+        }
+        
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
-        if let data = try? Data(contentsOf: saveURL),
-           let loaded = try? decoder.decode([Trip].self, from: data) {
-            trips = loaded
+        do {
+            let data = try Data(contentsOf: saveURL)
+            trips = try decoder.decode([Trip].self, from: data)
+        } catch {
+            print("Failed to load trips: \(error.localizedDescription)")
+            trips = []
         }
     }
 }

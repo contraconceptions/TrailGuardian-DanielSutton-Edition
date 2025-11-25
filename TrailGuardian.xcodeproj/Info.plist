@@ -20,8 +20,16 @@
     <string>1</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Trail Guardian needs your location to track your off-road trail adventures.</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>Trail Guardian records your off-road adventures even when the app is in the background.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Trail Guardian needs continuous location access to track your complete trail journey.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>Trail Guardian needs camera access to capture photos during your trail moments.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Trail Guardian needs photo library access to save and share your trail photos.</string>
     <key>UIBackgroundModes</key>
     <array>
         <string>location</string>
