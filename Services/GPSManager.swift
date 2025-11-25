@@ -43,7 +43,10 @@ class GPSManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let loc = locations.last, loc.horizontalAccuracy >= 0 else { return }
+        guard let loc = locations.last else { return }
+        // Filter out poor quality readings: horizontalAccuracy < 0 indicates invalid,
+        // and we want readings better than 100 meters for reliable tracking
+        guard loc.horizontalAccuracy >= 0 && loc.horizontalAccuracy <= 100 else { return }
         currentLocation = loc
         
         // Update altitude fusion engine with GPS altitude

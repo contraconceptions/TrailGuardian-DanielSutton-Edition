@@ -52,14 +52,19 @@ class APIManager {
     }
 }
 
-struct RateLimiter {
+class RateLimiter {
     let callsPerSecond: Int
     let callsPerDay: Int
     private var recentCalls: [Date] = []
     private var dailyCalls: Int = 0
     private var lastReset: Date = Date()
     
-    mutating func canMakeRequest() -> Bool {
+    init(callsPerSecond: Int, callsPerDay: Int) {
+        self.callsPerSecond = callsPerSecond
+        self.callsPerDay = callsPerDay
+    }
+    
+    func canMakeRequest() -> Bool {
         let now = Date()
         
         // Reset daily counter if needed
@@ -82,7 +87,7 @@ struct RateLimiter {
         return true
     }
     
-    mutating func recordRequest() {
+    func recordRequest() {
         let now = Date()
         recentCalls.append(now)
         dailyCalls += 1

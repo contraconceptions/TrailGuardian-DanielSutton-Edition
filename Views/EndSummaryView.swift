@@ -181,7 +181,12 @@ struct EndSummaryView: View {
                     } else {
                         // Fallback: create a simple placeholder image if map snapshot failed
                         let placeholder = UIImage(systemName: "map")?.withTintColor(.orange, renderingMode: .alwaysOriginal) ?? UIImage()
-                        pdfData = PDFExporter.generatePDF(for: trip, mapSnapshot: placeholder)
+                        if let fallbackPdf = PDFExporter.generatePDF(for: trip, mapSnapshot: placeholder) {
+                            pdfData = fallbackPdf
+                        } else {
+                            // If PDF generation completely fails, show error or handle gracefully
+                            print("PDF generation failed even with fallback image")
+                        }
                     }
                 }
                 .buttonStyle(.bordered)

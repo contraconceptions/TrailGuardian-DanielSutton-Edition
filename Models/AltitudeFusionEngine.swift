@@ -7,6 +7,7 @@ class AltitudeFusionEngine: ObservableObject {
     private var gpsAltitudes: [Double] = []
     private var baroAltitudes: [Double] = []
     private var baseBaroAltitude: Double = 0 // Reference point for relative altitude
+    private var isBaseBaroInitialized: Bool = false // Track initialization state separately
     
     @Published var fusedAltitude: Double = 0
     
@@ -20,8 +21,10 @@ class AltitudeFusionEngine: ObservableObject {
             guard let self = self else { return }
             
             // Handle first barometric reading as baseline
-            if self.baseBaroAltitude == 0 && baroAlt != 0 {
+            // Use separate initialization flag instead of checking for zero
+            if !self.isBaseBaroInitialized && baroAlt != 0 {
                 self.baseBaroAltitude = baroAlt
+                self.isBaseBaroInitialized = true
             }
             
             // Only use valid altitude values (> -500m, < 9000m)
@@ -73,6 +76,7 @@ class AltitudeFusionEngine: ObservableObject {
             self.gpsAltitudes.removeAll()
             self.baroAltitudes.removeAll()
             self.baseBaroAltitude = 0
+            self.isBaseBaroInitialized = false
             DispatchQueue.main.async {
                 self.fusedAltitude = 0
             }
