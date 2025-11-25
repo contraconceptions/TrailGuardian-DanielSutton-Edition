@@ -1,0 +1,15 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {
+    };
+    objectVersion = 56;
+    objects = {
+
+/* Begin PBXAggregateTarget section */
+        ...
+        // Note: This is a truncated minimal version for demo. In real, download a blank SwiftUI project PBXProj from Apple and upload.
+        // For now, when you clone to Mac/cloud, Xcode can regenerate it.
+    };
+    rootObject = 123B0E8F1A000001 /* Project object */;
+}
