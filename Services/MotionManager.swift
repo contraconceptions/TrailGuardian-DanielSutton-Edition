@@ -24,11 +24,11 @@ class MotionManager: ObservableObject {
     
     // Historical snapshots for trip reconstruction
     private(set) var snapshots: [MotionSnapshot] = []
-    private let maxSnapshots = 10000 // Prevent unbounded growth
-    
+    private let maxSnapshots = Constants.Motion.maxSnapshotBufferSize
+
     private init() {
-        motion.accelerometerUpdateInterval = 0.1
-        motion.deviceMotionUpdateInterval = 0.1
+        motion.accelerometerUpdateInterval = 1.0 / Constants.Motion.updateFrequency
+        motion.deviceMotionUpdateInterval = 1.0 / Constants.Motion.updateFrequency
     }
     
     func start() {
@@ -41,7 +41,7 @@ class MotionManager: ObservableObject {
             
             let accel = data.userAcceleration
             let totalG = sqrt(accel.x*accel.x + accel.y*accel.y + accel.z*accel.z)
-            let isAirborne = totalG < 0.3
+            let isAirborne = totalG < Constants.Motion.airborneThreshold
             
             DispatchQueue.main.async {
                 self.pitch = pitch

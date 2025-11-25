@@ -8,17 +8,23 @@ class GPSManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     @Published var currentLocation: CLLocation?
     @Published var trailPoints: [TripPoint] = []
     @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
-    
+    @Published var isActiveTracking: Bool = false
+
     override private init() {
         super.init()
         manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyBest
+        manager.desiredAccuracy = Constants.GPS.activeAccuracy
         manager.pausesLocationUpdatesAutomatically = false
         authorizationStatus = manager.authorizationStatus
     }
     
-    func start() {
+    func start(activeTracking: Bool = true) {
+        isActiveTracking = activeTracking
         authorizationStatus = manager.authorizationStatus
+
+        // Set accuracy based on tracking mode
+        manager.desiredAccuracy = activeTracking ? Constants.GPS.activeAccuracy : Constants.GPS.backgroundAccuracy
+
         if authorizationStatus == .notDetermined {
             manager.requestAlwaysAuthorization()
         } else {
@@ -27,6 +33,11 @@ class GPSManager: NSObject, ObservableObject, CLLocationManagerDelegate {
                 manager.startUpdatingLocation()
             }
         }
+    }
+
+    func setActiveTracking(_ active: Bool) {
+        isActiveTracking = active
+        manager.desiredAccuracy = active ? Constants.GPS.activeAccuracy : Constants.GPS.backgroundAccuracy
     }
     
     private func configureBackgroundUpdates() {
@@ -45,8 +56,8 @@ class GPSManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let loc = locations.last else { return }
         // Filter out poor quality readings: horizontalAccuracy < 0 indicates invalid,
-        // and we want readings better than 100 meters for reliable tracking
-        guard loc.horizontalAccuracy >= 0 && loc.horizontalAccuracy <= 100 else { return }
+        // and we want readings better than our threshold for reliable tracking
+        guard loc.horizontalAccuracy >= 0 && loc.horizontalAccuracy <= Constants.GPS.maxAccuracyMeters else { return }
         currentLocation = loc
         
         // Update altitude fusion engine with GPS altitude

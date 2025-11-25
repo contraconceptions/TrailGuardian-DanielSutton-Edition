@@ -13,55 +13,66 @@ class DifficultyCalculator {
         let avgRough = trip.points.reduce(0) { $0 + $1.roughness } / Double(trip.points.count)
         let maxGForce = trip.telemetryStats.maxGForce
         let maxPitch = trip.telemetryStats.maxPitch
-        let weatherPenalty = trip.weatherSnapshots.contains { $0.precipitation > 0.1 } ? 2 : 0
+        let weatherPenalty = trip.weatherSnapshots.contains { $0.precipitation > Constants.Weather.precipitationThreshold } ? Constants.Difficulty.weatherPenalty : 0
+
+        // Edge case: if average roughness is below threshold, it's likely not real off-roading
+        // (e.g., highway driving, paved roads). Apply a penalty to the score.
+        let isRealOffroading = avgRough >= Constants.Difficulty.minOffroadRoughness
         
-        // Bronco-specific adjustments
-        var broncoAdjustment: Double = 0
+        // Vehicle-specific adjustments
+        var vehicleAdjustment: Double = 0
         if trip.vehicleData.vehicleType == .bronco {
             // Terrain mode indicates difficulty level
             if let terrain = trip.vehicleData.terrainMode {
                 switch terrain {
                 case .rockCrawl:
-                    broncoAdjustment += 5 // Rock Crawl = serious off-roading
+                    vehicleAdjustment += Constants.Bronco.rockCrawlBonus
                 case .baja:
-                    broncoAdjustment += 3 // Baja = high-speed off-road
+                    vehicleAdjustment += Constants.Bronco.bajaBonus
                 case .sandMud:
-                    broncoAdjustment += 2 // Sand/Mud = challenging terrain
+                    vehicleAdjustment += Constants.Bronco.sandMudBonus
                 case .slippery:
-                    broncoAdjustment += 1 // Slippery = difficult conditions
+                    vehicleAdjustment += Constants.Bronco.slipperyBonus
                 default:
                     break
                 }
             }
-            
+
             // Lockers engaged = difficult terrain attempted
             if trip.vehicleData.frontLockerEngaged || trip.vehicleData.rearLockerEngaged {
-                broncoAdjustment += 3
+                vehicleAdjustment += Constants.Bronco.lockerBonus
             }
-            
+
             // 4WD Low = serious off-roading
             if trip.vehicleData.driveMode == .fourWDLow {
-                broncoAdjustment += 2
+                vehicleAdjustment += Constants.Bronco.fourWDLowBonus
             }
-            
+
             // Winch used = extreme difficulty
             if trip.vehicleData.winchUsed {
-                broncoAdjustment += 4
+                vehicleAdjustment += Constants.Bronco.winchBonus
             }
-            
+
             // Trail Control/Turn Assist = indicates challenging navigation
             if trip.vehicleData.trailControlActive || trip.vehicleData.trailTurnAssistActive {
-                broncoAdjustment += 1
+                vehicleAdjustment += Constants.Bronco.trailControlBonus
             }
         }
         
         // Sutton Score calculation (0-100)
-        let gradeScore = min(40, maxGrade / 2.5) // Max 40 points for grade
-        let roughnessScore = min(30, avgRough * 100) // Max 30 points for roughness
-        let gForceScore = min(20, maxGForce * 10) // Max 20 points for G-force
-        let pitchScore = min(10, maxPitch / 2) // Max 10 points for pitch
-        
-        ratings.suttonScore = Int(gradeScore + roughnessScore + gForceScore + pitchScore + Double(weatherPenalty) + broncoAdjustment)
+        let gradeScore = min(Constants.Difficulty.maxGradePoints, maxGrade / Constants.Difficulty.gradeDivisor)
+        let roughnessScore = min(Constants.Difficulty.maxRoughnessPoints, avgRough * Constants.Difficulty.roughnessMultiplier)
+        let gForceScore = min(Constants.Difficulty.maxGForcePoints, maxGForce * Constants.Difficulty.gForceMultiplier)
+        let pitchScore = min(Constants.Difficulty.maxPitchPoints, maxPitch / Constants.Difficulty.pitchDivisor)
+
+        var totalScore = gradeScore + roughnessScore + gForceScore + pitchScore + Double(weatherPenalty) + vehicleAdjustment
+
+        // Apply penalty if not real off-roading (smooth road driving)
+        if !isRealOffroading {
+            totalScore *= 0.5 // 50% penalty for non-offroad conditions
+        }
+
+        ratings.suttonScore = Int(totalScore)
         ratings.suttonScore = min(100, max(0, ratings.suttonScore)) // Clamp to 0-100
         
         // Derived ratings

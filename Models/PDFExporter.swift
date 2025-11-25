@@ -4,21 +4,26 @@ import MapKit
 
 class PDFExporter {
     static func generatePDF(for trip: Trip, mapSnapshot: UIImage) -> Data? {
-        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(x: 0, y: 0, width: 612, height: 792))
+        let renderer = UIGraphicsPDFRenderer(bounds: CGRect(
+            x: 0,
+            y: 0,
+            width: Constants.PDF.pageWidth,
+            height: Constants.PDF.pageHeight
+        ))
         
         do {
             return try renderer.pdfData { ctx in
                 ctx.beginPage()
                 
-                var yPosition: CGFloat = 40
-                
+                var yPosition: CGFloat = Constants.PDF.marginTop
+
                 // Title
-                let title = "Trail Summary – \(trip.title) | Daniel Sutton Edition"
+                let title = "Trail Summary – \(trip.title) | \(Constants.App.edition)"
                 let titleAttributes: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.boldSystemFont(ofSize: 24),
+                    .font: UIFont.boldSystemFont(ofSize: Constants.PDF.titleFontSize),
                     .foregroundColor: UIColor.black
                 ]
-                title.draw(at: CGPoint(x: 40, y: yPosition), withAttributes: titleAttributes)
+                title.draw(at: CGPoint(x: Constants.PDF.marginLeft, y: yPosition), withAttributes: titleAttributes)
                 yPosition += 50
                 
                 // Map
@@ -29,35 +34,41 @@ class PDFExporter {
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateStyle = .medium
                 dateFormatter.timeStyle = .short
-                
-                let duration: String
-                if let ended = trip.endedAt {
-                    let interval = ended.timeIntervalSince(trip.startedAt)
-                    let hours = Int(interval) / 3600
-                    let minutes = (Int(interval) % 3600) / 60
-                    duration = "\(hours)h \(minutes)m"
-                } else {
-                    duration = "Ongoing"
-                }
-                
+
                 var stats = """
                 Started: \(dateFormatter.string(from: trip.startedAt))
-                Duration: \(duration)
+                Duration: \(trip.formattedDuration)
+                Distance: \(String(format: "%.2f", trip.totalDistanceKm)) km (\(String(format: "%.2f", trip.totalDistanceMiles)) mi)
+                Average Speed: \(String(format: "%.1f", trip.averageSpeedKmh)) km/h
+                Max Speed: \(String(format: "%.1f", trip.maxSpeedKmh)) km/h
                 Points Recorded: \(trip.points.count)
+
+                Difficulty Ratings:
                 Sutton Score: \(trip.difficultyRatings.suttonScore)/100
+                Wells Rating: \(trip.difficultyRatings.wellsRating)
                 Jeep Badge: \(trip.difficultyRatings.jeepBadge)/10
+                USFS: \(trip.difficultyRatings.usfsRating)
+
+                Telemetry:
                 Max Pitch: \(String(format: "%.1f", trip.telemetryStats.maxPitch))°
                 Max Roll: \(String(format: "%.1f", trip.telemetryStats.maxRoll))°
                 Max G-Force: \(String(format: "%.2f", trip.telemetryStats.maxGForce))g
+
+                Elevation:
+                Min: \(String(format: "%.0f", trip.minElevation))m
+                Max: \(String(format: "%.0f", trip.maxElevation))m
+                Gain: \(String(format: "%.0f", trip.elevationGainMeters))m
+                Loss: \(String(format: "%.0f", trip.elevationLossMeters))m
+
                 Weather: \(trip.weatherSnapshots.first?.condition ?? "Unknown")
                 """
                 
                 let statsAttributes: [NSAttributedString.Key: Any] = [
-                    .font: UIFont.systemFont(ofSize: 16),
+                    .font: UIFont.systemFont(ofSize: Constants.PDF.captionFontSize),
                     .foregroundColor: UIColor.black
                 ]
-                stats.draw(at: CGPoint(x: 40, y: yPosition), withAttributes: statsAttributes)
-                yPosition += 180
+                stats.draw(at: CGPoint(x: Constants.PDF.marginLeft, y: yPosition), withAttributes: statsAttributes)
+                yPosition += CGFloat(stats.components(separatedBy: "\n").count * 14)
                 
                 // Bronco Configuration Section
                 if trip.vehicleData.vehicleType == .bronco {
