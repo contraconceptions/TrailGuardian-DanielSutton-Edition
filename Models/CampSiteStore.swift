@@ -4,28 +4,49 @@ import CoreLocation
 class CampSiteStore: ObservableObject {
     static let shared = CampSiteStore()
     @Published var campSites: [CampSite] = []
-    
+    @Published var lastError: String?
+
     private let saveURL: URL
-    
+
     private init() {
         let fm = FileManager.default
         saveURL = fm.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("campsites.json")
         load()
     }
-    
+
+    /// Add a new camp site (validates before saving)
     func add(_ campSite: CampSite) {
+        guard campSite.isValid else {
+            lastError = "Cannot save invalid camp site"
+            print("⚠️ Attempted to save invalid camp site: \(campSite.name)")
+            return
+        }
+
         campSites.insert(campSite, at: 0)
         save()
     }
-    
+
+    /// Update an existing camp site (validates before saving)
     func update(_ campSite: CampSite) {
+        guard campSite.isValid else {
+            lastError = "Cannot update invalid camp site"
+            print("⚠️ Attempted to update invalid camp site: \(campSite.name)")
+            return
+        }
+
         if let index = campSites.firstIndex(where: { $0.id == campSite.id }) {
             campSites[index] = campSite
             save()
         }
     }
-    
+
+    /// Delete a camp site and its associated photos
     func delete(_ campSite: CampSite) {
+        // Delete associated photos
+        for photoFilename in campSite.photos {
+            PhotoHelper.deletePhoto(filename: photoFilename)
+        }
+
         campSites.removeAll { $0.id == campSite.id }
         save()
     }
@@ -68,23 +89,37 @@ class CampSiteStore: ObservableObject {
         do {
             let data = try encoder.encode(campSites)
             try data.write(to: saveURL, options: [.atomic])
+            lastError = nil
         } catch {
-            print("Failed to save camp sites: \(error.localizedDescription)")
+            lastError = "Failed to save camp sites: \(error.localizedDescription)"
+            print(lastError ?? "")
         }
     }
-    
+
     private func load() {
         guard FileManager.default.fileExists(atPath: saveURL.path) else {
             return
         }
-        
+
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         do {
             let data = try Data(contentsOf: saveURL)
-            campSites = try decoder.decode([CampSite].self, from: data)
+            let loadedSites = try decoder.decode([CampSite].self, from: data)
+
+            // Filter out invalid camp sites
+            campSites = loadedSites.filter { site in
+                if !site.isValid {
+                    print("⚠️ Skipping invalid camp site during load: \(site.name)")
+                    return false
+                }
+                return true
+            }
+
+            lastError = nil
         } catch {
-            print("Failed to load camp sites: \(error.localizedDescription)")
+            lastError = "Failed to load camp sites: \(error.localizedDescription)"
+            print(lastError ?? "")
             campSites = []
         }
     }

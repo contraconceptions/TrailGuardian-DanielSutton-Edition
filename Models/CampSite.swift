@@ -30,7 +30,44 @@ struct CampSite: Identifiable, Codable {
     var location: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
     }
-    
+
+    // MARK: - Validation
+
+    /// Check if coordinates are valid
+    var isValidCoordinate: Bool {
+        return latitude.isFinite &&
+               longitude.isFinite &&
+               latitude >= -90 && latitude <= 90 &&
+               longitude >= -180 && longitude <= 180
+    }
+
+    /// Check if elevation is reasonable
+    var isValidElevation: Bool {
+        return elevation.isFinite && elevation > -500 && elevation < 9000
+    }
+
+    /// Check if ratings are in valid range (1-5)
+    var hasValidRatings: Bool {
+        return (1...5).contains(accessibilityRating) &&
+               (1...5).contains(starRating) &&
+               (1...5).contains(difficultyToReach) &&
+               (1...5).contains(privacyLevel)
+    }
+
+    /// Check if photo count is within limit
+    var hasValidPhotoCount: Bool {
+        return photos.count <= Constants.Photo.maxPhotosPerSite
+    }
+
+    /// Check if camp site data is valid
+    var isValid: Bool {
+        return !name.isEmpty &&
+               isValidCoordinate &&
+               isValidElevation &&
+               hasValidRatings &&
+               hasValidPhotoCount
+    }
+
     init(
         id: UUID = UUID(),
         name: String,
