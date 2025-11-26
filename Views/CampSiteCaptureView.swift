@@ -261,18 +261,14 @@ struct CampSiteCaptureView: View {
     }
     
     private func saveCampSite() {
-        // Save photos to documents directory
+        // Save photos to documents directory with compression
         var photoPaths: [String] = []
-        let fileManager = FileManager.default
-        let documentsPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        let photosDirectory = documentsPath.appendingPathComponent("CampSitePhotos")
-        
-        try? fileManager.createDirectory(at: photosDirectory, withIntermediateDirectories: true)
-        
-        for (index, data) in photoData.enumerated() {
-            let photoPath = photosDirectory.appendingPathComponent("\(UUID().uuidString)_\(index).jpg")
-            if let _ = try? data.write(to: photoPath) {
-                photoPaths.append(photoPath.lastPathComponent)
+
+        for data in photoData {
+            // Compress photo before saving
+            if let compressedData = PhotoHelper.compressPhoto(data),
+               let filename = PhotoHelper.savePhoto(compressedData) {
+                photoPaths.append(filename)
             }
         }
         

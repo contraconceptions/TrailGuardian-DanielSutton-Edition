@@ -7,11 +7,17 @@ struct TrackView: View {
     @ObservedObject var mapMgr = TrailMapManager.shared
     @StateObject private var fordPass = FordPassManager.shared
     @StateObject private var obd = OBDManager.shared
-    @State private var region = MKCoordinateRegion()
+    @State private var region = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: Constants.Map.defaultLatitude, longitude: Constants.Map.defaultLongitude),
+        span: MKCoordinateSpan(latitudeDelta: Constants.Map.detailLatitudeDelta, longitudeDelta: Constants.Map.detailLongitudeDelta)
+    )
     @State private var trip = Trip.new()
     @State private var showingEasterEgg = false
     @State private var showingBroncoControls = false
     @State private var showingCampSiteCapture = false
+    @State private var isLoadingWeather = true
+    @State private var isLoadingGPS = true
+    @State private var autoSaveTimer: Timer?
     @ObservedObject var campStore = CampSiteStore.shared
     
     var body: some View {
@@ -47,19 +53,45 @@ struct TrackView: View {
             }
             .onReceive(gps.$currentLocation) { loc in
                 if let loc = loc {
-                    region = MKCoordinateRegion(center: loc.coordinate, span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01))
+                    region = MKCoordinateRegion(
+                        center: loc.coordinate,
+                        span: MKCoordinateSpan(
+                            latitudeDelta: Constants.Map.detailLatitudeDelta,
+                            longitudeDelta: Constants.Map.detailLongitudeDelta
+                        )
+                    )
                 }
             }
             
             // Telemetry Dashboard
             VStack {
-                Text("True Elevation: \(AltitudeFusionEngine.shared.fusedAltitude, specifier: "%.0f") m")
-                Text("Speed: \( (gps.currentLocation?.speed ?? 0) * 3.6 , specifier: "%.1f") km/h") // Convert m/s to km/h
-                Text("Pitch/Roll: \(motion.pitch, specifier: "%.0f")° / \(motion.roll, specifier: "%.0f")°")
-                Text("G-Force: \(motion.gForce, specifier: "%.2f")")
-                Text("Roughness: \(motion.roughness, specifier: "%.3f")")
-                if motion.isAirborne {
-                    Text("AIRBORNE!").foregroundColor(.red)
+                if isLoadingGPS {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Acquiring GPS...")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                } else {
+                    Text("True Elevation: \(AltitudeFusionEngine.shared.fusedAltitude, specifier: "%.0f") m")
+                    Text("Speed: \( (gps.currentLocation?.speed ?? 0) * Constants.Conversion.metersPerSecToKmPerHour , specifier: "%.1f") km/h")
+                    Text("Pitch/Roll: \(motion.pitch, specifier: "%.0f")° / \(motion.roll, specifier: "%.0f")°")
+                    Text("G-Force: \(motion.gForce, specifier: "%.2f")")
+                    Text("Roughness: \(motion.roughness, specifier: "%.3f")")
+                    if motion.isAirborne {
+                        Text("AIRBORNE!").foregroundColor(.red)
+                    }
+                }
+
+                if isLoadingWeather {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.6)
+                        Text("Loading weather...")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 
                 // Bronco status indicator
@@ -125,12 +157,18 @@ struct TrackView: View {
             }
         }
         .onAppear {
-            trip = Trip.new()
+            // Check for temp trip from crash recovery
+            if let tempTrip = TripStore.shared.loadTempTrip() {
+                trip = tempTrip
+            } else {
+                trip = Trip.new()
+            }
+
             AltitudeFusionEngine.shared.reset()
-            gps.start()
+            gps.start(activeTracking: true)
             motion.start()
             BarometerManager.shared.start()
-            
+
             // Sync vehicle data from connected sources
             if fordPass.isAuthenticated {
                 fordPass.syncVehicleData(to: &trip.vehicleData)
@@ -138,16 +176,28 @@ struct TrackView: View {
             if obd.isConnected {
                 obd.syncVehicleData(to: &trip.vehicleData)
             }
-            
-            Task { 
-                // Wait for GPS location before fetching weather
+
+            // Start auto-save timer (every 60 seconds)
+            autoSaveTimer = Timer.scheduledTimer(withTimeInterval: Constants.AutoSave.intervalSeconds, repeats: true) { _ in
+                TripStore.shared.saveTempTrip(buildTrip())
+            }
+
+            // Monitor GPS lock
+            Task {
                 var attempts = 0
-                while gps.currentLocation == nil && attempts < 10 {
-                    try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                while gps.currentLocation == nil && attempts < 20 {
+                    try? await Task.sleep(nanoseconds: Constants.Weather.gpsCheckInterval)
                     attempts += 1
                 }
+                isLoadingGPS = false
+
+                // Fetch weather with extended timeout
                 if let location = gps.currentLocation?.coordinate {
                     await WeatherManager.shared.fetchCurrent(at: location)
+                    isLoadingWeather = false
+                } else {
+                    // No GPS, still stop loading indicator
+                    isLoadingWeather = false
                 }
             }
         }
@@ -158,18 +208,17 @@ struct TrackView: View {
             CampSiteCaptureView(associatedTripID: trip.id)
         }
         .onDisappear {
+            autoSaveTimer?.invalidate()
+            autoSaveTimer = nil
             gps.stop()
             motion.stop()
             BarometerManager.shared.stop()
             motion.clearSnapshots()
         }
-        .onShake { 
-            showingEasterEgg = true
-        }
-        .alert("Rough Terrain Master!", isPresented: $showingEasterEgg) {
-            Button("Legend") { }
+        .alert("\(Constants.App.name) – Certified Trail Legend!", isPresented: $showingEasterEgg) {
+            Button("Awesome!") { }
         } message: {
-            Text("Daniel Sutton – Certified Trail Legend")
+            Text("You've unlocked the 100 Club! Daniel Sutton would be proud.")
         }
     }
     
@@ -199,8 +248,8 @@ struct TrackView: View {
                 let prevPoint = gps.trailPoints[index - 1]
                 let altitudeDiff = p.fusedAlt - prevPoint.fusedAlt
                 let distance = sqrt(
-                    pow((p.lat - prevPoint.lat) * 111000, 2) + // Approx meters per degree lat
-                    pow((p.lng - prevPoint.lng) * 111000 * cos(p.lat * .pi / 180), 2) // Approx meters per degree lng
+                    pow((p.lat - prevPoint.lat) * Constants.Conversion.metersPerDegreeLat, 2) +
+                    pow((p.lng - prevPoint.lng) * Constants.Conversion.metersPerDegreeLng * cos(p.lat * .pi / 180), 2)
                 )
                 if distance > 0 {
                     gradePercent = (altitudeDiff / distance) * 100
@@ -247,16 +296,12 @@ struct TrackView: View {
         t.telemetryStats.maxRoll = maxRoll
         t.telemetryStats.maxGForce = maxGForce
         t.difficultyRatings = DifficultyCalculator.calculate(for: t)
-        return t
-    }
-}
 
-// Shake gesture (simplified - full impl in production would use CoreMotion)
-extension View {
-    func onShake(perform action: @escaping () -> Void) -> some View {
-        self.onAppear {
-            // Placeholder: In full app, hook to MotionManager for shake detection
-            action() // Trigger on appear for demo
+        // Check for "100 Club" achievement
+        if t.difficultyRatings.suttonScore >= 100 {
+            showingEasterEgg = true
         }
+
+        return t
     }
 }

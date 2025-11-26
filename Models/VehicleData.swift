@@ -27,6 +27,15 @@ struct VehicleData: Codable {
 
 enum VehicleType: String, Codable, CaseIterable {
     case bronco = "Ford Bronco"
+    case jeepWrangler = "Jeep Wrangler"
+    case jeepGladiator = "Jeep Gladiator"
+    case toyota4Runner = "Toyota 4Runner"
+    case toyotaTacoma = "Toyota Tacoma"
+    case chevyColorado = "Chevy Colorado/ZR2"
+    case fordRanger = "Ford Ranger"
+    case nissanFrontier = "Nissan Frontier"
+    case ram1500 = "Ram 1500 TRX/Rebel"
+    case landRoverDefender = "Land Rover Defender"
     case other = "Other"
 }
 
