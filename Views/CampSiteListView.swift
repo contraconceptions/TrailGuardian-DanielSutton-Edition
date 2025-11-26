@@ -36,62 +36,112 @@ struct CampSiteListView: View {
             if showingMap {
                 MapView(campSites: filteredSites)
                     .edgesIgnoringSafeArea(.all)
+            } else if filteredSites.isEmpty {
+                if store.campSites.isEmpty {
+                    EmptyStateView(
+                        icon: DesignSystem.Icons.camp,
+                        title: "No Camp Sites",
+                        message: "Mark your first camp site while tracking a trail to see it appear here."
+                    )
+                } else {
+                    EmptyStateView(
+                        icon: "magnifyingglass",
+                        title: "No Results",
+                        message: "Try adjusting your search or filters."
+                    )
+                }
             } else {
                 List(filteredSites) { site in
                     NavigationLink(destination: CampSiteDetailView(campSite: site)) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(site.name)
-                                .font(.headline)
-                            HStack {
-                                ForEach(0..<site.starRating, id: \.self) { _ in
-                                    Image(systemName: "star.fill")
-                                        .foregroundColor(.yellow)
-                                        .font(.caption)
-                                }
-                            }
-                            Text(site.timestamp.formatted(date: .abbreviated, time: .omitted))
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                            if let desc = site.description {
-                                Text(desc)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(2)
-                            }
-                        }
-                        .padding(.vertical, 4)
+                        CampSiteRowView(site: site)
                     }
+                    .accessibilityLabel("Camp site: \(site.name), \(site.starRating) stars")
                 }
-                .searchable(text: $searchText)
+                .listStyle(.insetGrouped)
+                .searchable(text: $searchText, prompt: "Search camp sites")
             }
         }
         .navigationTitle("Camp Sites")
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
+                    HapticManager.shared.light()
                     showingMap.toggle()
                 } label: {
-                    Image(systemName: showingMap ? "list.bullet" : "map")
+                    Image(systemName: showingMap ? "list.bullet" : DesignSystem.Icons.map)
                 }
+                .accessibilityLabel(showingMap ? "Show list view" : "Show map view")
             }
             ToolbarItem(placement: .navigationBarLeading) {
                 Menu {
-                    Stepper("Min Rating: \(minRating)", value: $minRating, in: 0...5)
-                    Picker("Fire Ring", selection: $hasFireRing) {
-                        Text("Any").tag(nil as Bool?)
-                        Text("Yes").tag(true as Bool?)
-                        Text("No").tag(false as Bool?)
+                    Section {
+                        Stepper("Min Rating: \(minRating)", value: $minRating, in: 0...5)
                     }
-                    Picker("Water Source", selection: $hasWater) {
-                        Text("Any").tag(nil as Bool?)
-                        Text("Yes").tag(true as Bool?)
-                        Text("No").tag(false as Bool?)
+                    Section {
+                        Picker("Fire Ring", selection: $hasFireRing) {
+                            Text("Any").tag(nil as Bool?)
+                            Text("Yes").tag(true as Bool?)
+                            Text("No").tag(false as Bool?)
+                        }
+                        Picker("Water Source", selection: $hasWater) {
+                            Text("Any").tag(nil as Bool?)
+                            Text("Yes").tag(true as Bool?)
+                            Text("No").tag(false as Bool?)
+                        }
                     }
                 } label: {
                     Image(systemName: "line.3.horizontal.decrease.circle")
                 }
+                .accessibilityLabel("Filter camp sites")
             }
         }
+    }
+}
+
+/// Camp site row component with improved styling
+struct CampSiteRowView: View {
+    let site: CampSite
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: DesignSystem.Spacing.xs) {
+            Text(site.name)
+                .font(.headline)
+
+            HStack(spacing: DesignSystem.Spacing.xxs) {
+                // Star rating
+                HStack(spacing: 2) {
+                    ForEach(1...5, id: \.self) { index in
+                        Image(systemName: index <= site.starRating ? "star.fill" : "star")
+                            .foregroundColor(.orange)
+                            .font(.caption)
+                    }
+                }
+
+                Spacer()
+
+                // Features
+                HStack(spacing: DesignSystem.Spacing.xs) {
+                    if site.hasFireRing {
+                        StatusBadge("Fire", color: .orange, icon: "flame")
+                    }
+                    if site.waterSource != nil {
+                        StatusBadge("Water", color: .blue, icon: "drop.fill")
+                    }
+                }
+            }
+
+            if let desc = site.description {
+                Text(desc)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+            }
+
+            Text(site.timestamp.formatted(date: .abbreviated, time: .omitted))
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding(.vertical, DesignSystem.Spacing.xxs)
     }
 }
 

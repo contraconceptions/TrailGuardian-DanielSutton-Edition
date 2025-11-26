@@ -74,15 +74,27 @@ struct CampSiteCaptureView: View {
                     }
                 }
                 
-                Section("Basic Info") {
+                Section {
                     TextField("Camp Site Name", text: $name)
+                        .accessibilityLabel("Camp site name")
                     TextField("Description", text: $description, axis: .vertical)
                         .lineLimit(3...6)
+                        .accessibilityLabel("Camp site description")
+                } header: {
+                    Label("Basic Info", systemImage: "info.circle")
                 }
-                
-                Section("Photos") {
+
+                Section {
                     PhotosPicker(selection: $selectedPhotos, maxSelectionCount: 10, matching: .images) {
-                        Label("Add Photos", systemImage: "photo")
+                        HStack {
+                            Image(systemName: DesignSystem.Icons.photo)
+                                .foregroundColor(.blue)
+                            Text("Add Photos")
+                            Spacer()
+                            if !photoData.isEmpty {
+                                StatusBadge("\(photoData.count)", color: .blue)
+                            }
+                        }
                     }
                     .onChange(of: selectedPhotos) { items in
                         Task {
@@ -92,79 +104,176 @@ struct CampSiteCaptureView: View {
                                     photoData.append(data)
                                 }
                             }
+                            HapticManager.shared.success()
                         }
                     }
-                    
+                    .accessibilityLabel("Add photos, \(photoData.count) selected")
+
                     if !photoData.isEmpty {
-                        ScrollView(.horizontal) {
-                            HStack {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: DesignSystem.Spacing.sm) {
                                 ForEach(Array(photoData.enumerated()), id: \.offset) { index, data in
                                     if let uiImage = UIImage(data: data) {
                                         Image(uiImage: uiImage)
                                             .resizable()
-                                            .scaledToFit()
+                                            .scaledToFill()
                                             .frame(width: 100, height: 100)
-                                            .cornerRadius(8)
+                                            .cornerRadius(DesignSystem.CornerRadius.sm)
+                                            .clipped()
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: DesignSystem.CornerRadius.sm)
+                                                    .stroke(Color.secondary.opacity(0.2), lineWidth: 1)
+                                            )
+                                            .accessibilityLabel("Photo \(index + 1)")
                                     }
                                 }
                             }
+                            .padding(.vertical, DesignSystem.Spacing.xxs)
                         }
+                    }
+                } header: {
+                    Label("Photos (Optional)", systemImage: DesignSystem.Icons.photo)
+                } footer: {
+                    if !photoData.isEmpty {
+                        Text("Photos will be compressed to save storage space")
+                            .font(.caption2)
                     }
                 }
                 
-                Section("Features") {
-                    Toggle("Has Fire Ring", isOn: $hasFireRing)
-                    
-                    Button("Add Water Source") {
-                        showingWaterSource = true
+                Section {
+                    Toggle(isOn: $hasFireRing) {
+                        Label("Has Fire Ring", systemImage: "flame")
                     }
-                    
+                    .accessibilityLabel("Toggle fire ring availability")
+
+                    Button {
+                        HapticManager.shared.light()
+                        showingWaterSource = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "drop.fill")
+                                .foregroundColor(.blue)
+                            Text("Add Water Source")
+                            Spacer()
+                        }
+                    }
+
                     if let water = waterSource {
                         HStack {
-                            Text("Water: \(water.type.rawValue)")
+                            Image(systemName: "drop.fill")
+                                .foregroundColor(.blue)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(water.type.rawValue)
+                                    .font(.body)
+                                Text("\(Int(water.distance))m away")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                             Spacer()
-                            Text("\(Int(water.distance))m away")
-                                .foregroundColor(.secondary)
+                            Button {
+                                waterSource = nil
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                            }
                         }
-                        Button("Remove Water Source") {
-                            waterSource = nil
-                        }
+                        .accessibilityLabel("Water source: \(water.type.rawValue), \(Int(water.distance)) meters away")
                     }
-                    
-                    VStack(alignment: .leading) {
-                        Text("Wildlife Sightings")
+
+                    VStack(alignment: .leading, spacing: DesignSystem.Spacing.sm) {
+                        Label("Wildlife Sightings", systemImage: "pawprint.fill")
+                            .font(.headline)
+                            .foregroundColor(.primary)
+
                         HStack {
-                            TextField("Add wildlife", text: $newWildlife)
-                            Button("Add") {
+                            TextField("e.g., Deer, Bear", text: $newWildlife)
+                            Button {
                                 if !newWildlife.isEmpty {
                                     wildlifeSightings.append(newWildlife)
                                     newWildlife = ""
+                                    HapticManager.shared.light()
                                 }
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundColor(.blue)
                             }
+                            .disabled(newWildlife.isEmpty)
                         }
+
                         ForEach(wildlifeSightings, id: \.self) { wildlife in
                             HStack {
+                                Image(systemName: "pawprint")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
                                 Text(wildlife)
                                 Spacer()
-                                Button("Remove") {
+                                Button {
                                     wildlifeSightings.removeAll { $0 == wildlife }
+                                    HapticManager.shared.light()
+                                } label: {
+                                    Image(systemName: "minus.circle.fill")
+                                        .foregroundColor(.red)
                                 }
                             }
                         }
                     }
-                    
-                    Stepper("Accessibility: \(accessibilityRating)/5", value: $accessibilityRating, in: 1...5)
+
+                    Stepper(value: $accessibilityRating, in: 1...5) {
+                        HStack {
+                            Label("Accessibility", systemImage: "car.fill")
+                            Spacer()
+                            Text("\(accessibilityRating)/5")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                } header: {
+                    Label("Features", systemImage: "star.fill")
                 }
                 
-                Section("Conditions") {
-                    TextField("Terrain Type", text: $terrainType)
-                    TextField("Ground Conditions", text: $groundConditions)
+                Section {
+                    TextField("e.g., Rocky, Sandy, Forest", text: $terrainType)
+                        .accessibilityLabel("Terrain type")
+                    TextField("e.g., Level, Soft, Muddy", text: $groundConditions)
+                        .accessibilityLabel("Ground conditions")
+                } header: {
+                    Label("Conditions", systemImage: "leaf.fill")
                 }
-                
-                Section("Ratings") {
-                    Stepper("Star Rating: \(starRating)/5", value: $starRating, in: 1...5)
-                    Stepper("Difficulty to Reach: \(difficultyToReach)/5", value: $difficultyToReach, in: 1...5)
-                    Stepper("Privacy Level: \(privacyLevel)/5", value: $privacyLevel, in: 1...5)
+
+                Section {
+                    Stepper(value: $starRating, in: 1...5) {
+                        HStack {
+                            Label("Overall Rating", systemImage: "star.fill")
+                            Spacer()
+                            HStack(spacing: 2) {
+                                ForEach(1...5, id: \.self) { index in
+                                    Image(systemName: index <= starRating ? "star.fill" : "star")
+                                        .foregroundColor(.orange)
+                                        .font(.caption)
+                                }
+                            }
+                        }
+                    }
+                    .accessibilityLabel("Overall rating: \(starRating) out of 5 stars")
+
+                    Stepper(value: $difficultyToReach, in: 1...5) {
+                        HStack {
+                            Label("Difficulty", systemImage: DesignSystem.Icons.difficulty)
+                            Spacer()
+                            Text("\(difficultyToReach)/5")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    Stepper(value: $privacyLevel, in: 1...5) {
+                        HStack {
+                            Label("Privacy", systemImage: "eye.slash.fill")
+                            Spacer()
+                            Text("\(privacyLevel)/5")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                } header: {
+                    Label("Ratings", systemImage: "star.fill")
                 }
                 
                 Section("Gear") {
@@ -229,14 +338,24 @@ struct CampSiteCaptureView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
+                        HapticManager.shared.light()
                         dismiss()
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button {
+                        HapticManager.shared.success()
                         saveCampSite()
+                    } label: {
+                        HStack(spacing: DesignSystem.Spacing.xxs) {
+                            Image(systemName: DesignSystem.Icons.save)
+                            Text("Save")
+                        }
+                        .fontWeight(.semibold)
                     }
                     .disabled(name.isEmpty)
+                    .accessibilityLabel("Save camp site")
+                    .accessibilityHint(name.isEmpty ? "Enter a name to save" : "")
                 }
             }
             .sheet(isPresented: $showingWaterSource) {
