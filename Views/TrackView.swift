@@ -212,26 +212,6 @@ struct TrackView: View {
                 .accessibilityLabel("Mark current location as camp site")
 
                 // End button
-                NavigationLink(destination: EndSummaryView(trip: buildTrip())) {
-                    HStack {
-                        Image(systemName: "stop.circle.fill")
-                        Text("End Trail")
-                    }
-                }
-// Mark Camp Site Button
-                Button {
-                    HapticManager.shared.light()
-                    showingCampSiteCapture = true
-                } label: {
-                    HStack {
-                        Image(systemName: DesignSystem.Icons.camp)
-                        Text("Mark Camp Site")
-                    }
-                }
-                .buttonStyle(SecondaryButtonStyle(color: DesignSystem.Colors.campSite))
-                .accessibilityLabel("Mark current location as camp site")
-
-                // End button
                 Button {
                     HapticManager.shared.warning()
                     showingEndConfirmation = true
@@ -365,7 +345,7 @@ struct TrackView: View {
                 timestamp: p.timestamp,
                 lat: p.lat,
                 lng: p.lng,
-                fusedAlt: p.fusedAlt, // Use the point's own fused altitude
+                fusedAlt: p.fusedAlt,
                 speed: p.speed,
                 heading: p.heading,
                 roughness: motionSnapshot.roughness,

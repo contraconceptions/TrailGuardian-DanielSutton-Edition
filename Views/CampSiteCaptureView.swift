@@ -344,25 +344,23 @@ struct CampSiteCaptureView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-ToolbarItem(placement: .navigationBarTrailing) {
-    if isSaving {
-        ProgressView()
-    } else {
-        Button {
-            HapticManager.shared.success()
-            saveCampSite()
-        } label: {
-            HStack(spacing: DesignSystem.Spacing.xxs) {
-                Image(systemName: DesignSystem.Icons.save)
-                Text("Save")
-            }
-            .fontWeight(.semibold)
-        }
-        .disabled(name.isEmpty)
-        .accessibilityLabel("Save camp site")
-        .accessibilityHint(name.isEmpty ? "Enter a name to save" : "")
-    }
-}
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Button {
+                            HapticManager.shared.success()
+                            saveCampSite()
+                        } label: {
+                            HStack(spacing: DesignSystem.Spacing.xxs) {
+                                Image(systemName: DesignSystem.Icons.save)
+                                Text("Save")
+                            }
+                            .fontWeight(.semibold)
+                        }
+                        .disabled(name.isEmpty)
+                        .accessibilityLabel("Save camp site")
+                        .accessibilityHint(name.isEmpty ? "Enter a name to save" : "")
+                    }
                 }
             }
             .sheet(isPresented: $showingWaterSource) {
@@ -491,4 +489,3 @@ struct WaterSourceView: View {
         }
     }
 }
-

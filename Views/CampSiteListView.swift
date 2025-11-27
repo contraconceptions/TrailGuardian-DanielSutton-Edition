@@ -37,21 +37,19 @@ struct CampSiteListView: View {
                 MapView(campSites: filteredSites)
                     .edgesIgnoringSafeArea(.all)
             } else if filteredSites.isEmpty {
-} else if filteredSites.isEmpty {
-    if store.campSites.isEmpty {
-        EmptyStateView(
-            icon: DesignSystem.Icons.camp,
-            title: "No Camp Sites",
-            message: "Mark your first camp site while tracking a trail to see it appear here."
-        )
-    } else {
-        EmptyStateView(
-            icon: "magnifyingglass",
-            title: "No Results",
-            message: "Try adjusting your search or filters."
-        )
-    }
-} else {
+                if store.campSites.isEmpty {
+                    EmptyStateView(
+                        icon: DesignSystem.Icons.camp,
+                        title: "No Camp Sites",
+                        message: "Mark your first camp site while tracking a trail to see it appear here."
+                    )
+                } else {
+                    EmptyStateView(
+                        icon: "magnifyingglass",
+                        title: "No Results",
+                        message: "Try adjusting your search or filters."
+                    )
+                }
             } else {
                 List(filteredSites) { site in
                     NavigationLink(destination: CampSiteDetailView(campSite: site)) {
@@ -202,4 +200,3 @@ struct MapView: View {
         }
     }
 }
-

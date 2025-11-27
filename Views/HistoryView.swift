@@ -9,34 +9,18 @@ struct HistoryView: View {
     var body: some View {
         Group {
             if store.trips.isEmpty {
-if store.trips.isEmpty {
-    EmptyStateView(
-        icon: DesignSystem.Icons.history,
-        title: "No Trails Yet",
-        message: "Start your first trail to see it appear here. Your adventure awaits!",
-        actionTitle: "Start New Trail",
-        action: { dismiss() }
-    )
-} else {
-    List {
-        ForEach(store.trips) { trip in
-            NavigationLink(destination: EndSummaryView(trip: trip)) {
-                TripRowView(trip: trip)
-            }
-            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                Button(role: .destructive) {
-                    HapticManager.shared.warning()
-                    tripToDelete = trip
-                    showingDeleteAlert = true
-                } label: {
-                    Label("Delete", systemImage: DesignSystem.Icons.delete)
-                }
-            }
-            .accessibilityLabel("Trip: \(trip.title), Sutton Score: \(trip.difficultyRatings.suttonScore)")
-        }
-    }
-    .listStyle(.insetGrouped)
-}
+                EmptyStateView(
+                    icon: DesignSystem.Icons.history,
+                    title: "No Trails Yet",
+                    message: "Start your first trail to see it appear here. Your adventure awaits!",
+                    actionTitle: "Start New Trail",
+                    action: { dismiss() }
+                )
+            } else {
+                List {
+                    ForEach(store.trips) { trip in
+                        NavigationLink(destination: EndSummaryView(trip: trip)) {
+                            TripRowView(trip: trip)
                         }
                         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
                             Button(role: .destructive) {
@@ -51,8 +35,6 @@ if store.trips.isEmpty {
                     }
                 }
                 .listStyle(.insetGrouped)
-            }
-                }
             }
         }
         .navigationTitle("\(Constants.App.edition) Trails")
