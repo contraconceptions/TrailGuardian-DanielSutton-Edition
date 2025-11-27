@@ -102,14 +102,26 @@ class FordPassManager: ObservableObject {
         // Stub implementation
         // When implemented, make actual API calls:
         /*
-        let url = URL(string: "\(baseURL)/vehicles/\(vin)/status")!
+        guard let url = URL(string: "\(baseURL)/vehicles/\(vin)/status") else {
+            throw FordPassError.invalidURL
+        }
         var request = URLRequest(url: url)
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        
+
         let (data, response) = try await URLSession.shared.data(for: request)
-        // Parse response and return VehicleData
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            throw FordPassError.networkError
+        }
+
+        guard let vehicleStatus = try? JSONDecoder().decode(VehicleStatus.self, from: data) else {
+            throw FordPassError.invalidResponse
+        }
+
+        return vehicleStatus
         */
-        
+
         throw FordPassError.notImplemented("API endpoint implementation pending")
     }
     

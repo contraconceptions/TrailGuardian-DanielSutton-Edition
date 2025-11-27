@@ -65,99 +65,187 @@ struct TrackView: View {
             }
             
             // Telemetry Dashboard
-            VStack {
+            VStack(spacing: DesignSystem.Spacing.md) {
                 if isLoadingGPS {
-                    HStack {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                        Text("Acquiring GPS...")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
+                    LoadingIndicator("Acquiring GPS")
+                        .card()
                 } else {
-                    Text("True Elevation: \(AltitudeFusionEngine.shared.fusedAltitude, specifier: "%.0f") m")
-                    Text("Speed: \( (gps.currentLocation?.speed ?? 0) * Constants.Conversion.metersPerSecToKmPerHour , specifier: "%.1f") km/h")
-                    Text("Pitch/Roll: \(motion.pitch, specifier: "%.0f")° / \(motion.roll, specifier: "%.0f")°")
-                    Text("G-Force: \(motion.gForce, specifier: "%.2f")")
-                    Text("Roughness: \(motion.roughness, specifier: "%.3f")")
+                    // Primary metrics grid
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: DesignSystem.Spacing.sm) {
+                        MetricCard(
+                            icon: DesignSystem.Icons.elevation,
+                            label: "Elevation",
+                            value: "\(Int(AltitudeFusionEngine.shared.fusedAltitude))m",
+                            color: .orange
+                        )
+
+                        MetricCard(
+                            icon: DesignSystem.Icons.speed,
+                            label: "Speed",
+                            value: String(format: "%.0f", (gps.currentLocation?.speed ?? 0) * Constants.Conversion.metersPerSecToKmPerHour),
+                            color: .green
+                        )
+
+                        MetricCard(
+                            icon: DesignSystem.Icons.difficulty,
+                            label: "Roughness",
+                            value: String(format: "%.2f", motion.roughness),
+                            color: .red
+                        )
+                    }
+
+                    // Motion telemetry
+                    HStack(spacing: DesignSystem.Spacing.sm) {
+                        // Pitch/Roll
+                        VStack(spacing: DesignSystem.Spacing.xxs) {
+                            HStack(spacing: DesignSystem.Spacing.xxs) {
+                                Image(systemName: "arrow.up.and.down")
+                                    .font(.caption)
+                                Text("Pitch: \(Int(motion.pitch))°")
+                                    .font(.caption)
+                            }
+                            HStack(spacing: DesignSystem.Spacing.xxs) {
+                                Image(systemName: "arrow.left.and.right")
+                                    .font(.caption)
+                                Text("Roll: \(Int(motion.roll))°")
+                                    .font(.caption)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(DesignSystem.Spacing.sm)
+                        .background(DesignSystem.Colors.cardBackground)
+                        .cornerRadius(DesignSystem.CornerRadius.sm)
+
+                        // G-Force
+                        VStack(spacing: DesignSystem.Spacing.xxs) {
+                            Text(String(format: "%.2f", motion.gForce))
+                                .font(.title3.bold())
+                            Text("G-Force")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(DesignSystem.Spacing.sm)
+                        .background(DesignSystem.Colors.cardBackground)
+                        .cornerRadius(DesignSystem.CornerRadius.sm)
+                    }
+
+                    // Airborne indicator
                     if motion.isAirborne {
-                        Text("AIRBORNE!").foregroundColor(.red)
+                        HStack {
+                            Image(systemName: DesignSystem.Icons.warning)
+                                .foregroundColor(.white)
+                            Text("AIRBORNE!")
+                                .font(.headline.bold())
+                                .foregroundColor(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(DesignSystem.Spacing.sm)
+                        .background(DesignSystem.Colors.danger)
+                        .cornerRadius(DesignSystem.CornerRadius.md)
+                        .shadow(
+                            radius: DesignSystem.Shadow.md.radius,
+                            x: DesignSystem.Shadow.md.x,
+                            y: DesignSystem.Shadow.md.y
+                        )
+                        .accessibilityLabel("Warning: Vehicle is airborne")
                     }
                 }
 
                 if isLoadingWeather {
-                    HStack {
-                        ProgressView()
-                            .scaleEffect(0.6)
-                        Text("Loading weather...")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
+                    LoadingIndicator("weather", size: 0.7)
                 }
-                
+
                 // Bronco status indicator
                 if trip.vehicleData.vehicleType == .bronco {
-                    HStack {
-                        Image(systemName: "car.fill")
-                            .foregroundColor(.blue)
+                    HStack(spacing: DesignSystem.Spacing.sm) {
+                        Image(systemName: DesignSystem.Icons.vehicle)
+                            .foregroundColor(DesignSystem.Colors.bronco)
+
                         if let mode = trip.vehicleData.terrainMode {
-                            Text(mode.rawValue)
-                                .font(.caption)
+                            StatusBadge(mode.rawValue, color: DesignSystem.Colors.bronco)
                         }
+
                         if trip.vehicleData.frontLockerEngaged || trip.vehicleData.rearLockerEngaged {
-                            Image(systemName: "lock.fill")
-                                .foregroundColor(.orange)
-                                .font(.caption)
+                            StatusBadge("Locked", color: .orange, icon: DesignSystem.Icons.lock)
                         }
+
+                        Spacer()
                     }
-                    .padding(.top, 4)
+                    .card()
                 }
             }
-            .padding()
+            .padding(DesignSystem.Spacing.md)
             
-            // Bronco Controls Button
-            if trip.vehicleData.vehicleType == .bronco {
+            // Action Buttons
+            VStack(spacing: DesignSystem.Spacing.sm) {
+                // Bronco Controls Button
+                if trip.vehicleData.vehicleType == .bronco {
+                    Button {
+                        HapticManager.shared.light()
+                        showingBroncoControls = true
+                    } label: {
+                        HStack {
+                            Image(systemName: DesignSystem.Icons.settings)
+                            Text("Bronco Settings")
+                        }
+                    }
+                    .buttonStyle(SecondaryButtonStyle(color: DesignSystem.Colors.bronco))
+                    .accessibilityLabel("Open Bronco vehicle settings")
+                }
+
+                // Mark Camp Site Button
                 Button {
-                    showingBroncoControls = true
+                    HapticManager.shared.light()
+                    showingCampSiteCapture = true
                 } label: {
                     HStack {
-                        Image(systemName: "car.fill")
-                        Text("Bronco Settings")
+                        Image(systemName: DesignSystem.Icons.camp)
+                        Text("Mark Camp Site")
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.blue.opacity(0.2))
-                    .foregroundColor(.blue)
-                    .cornerRadius(12)
                 }
-            }
-            
-            // Mark Camp Site Button
-            Button {
-                showingCampSiteCapture = true
-            } label: {
-                HStack {
-                    Image(systemName: "tent.fill")
-                    Text("Mark Camp Site")
+                .buttonStyle(SecondaryButtonStyle(color: DesignSystem.Colors.campSite))
+                .accessibilityLabel("Mark current location as camp site")
+
+                // End button
+                NavigationLink(destination: EndSummaryView(trip: buildTrip())) {
+                    HStack {
+                        Image(systemName: "stop.circle.fill")
+                        Text("End Trail")
+                    }
                 }
-                .padding()
-                .frame(maxWidth: .infinity)
-                .background(Color.purple.opacity(0.2))
-                .foregroundColor(.purple)
-                .cornerRadius(12)
+// Mark Camp Site Button
+                Button {
+                    HapticManager.shared.light()
+                    showingCampSiteCapture = true
+                } label: {
+                    HStack {
+                        Image(systemName: DesignSystem.Icons.camp)
+                        Text("Mark Camp Site")
+                    }
+                }
+                .buttonStyle(SecondaryButtonStyle(color: DesignSystem.Colors.campSite))
+                .accessibilityLabel("Mark current location as camp site")
+
+                // End button
+                Button {
+                    HapticManager.shared.warning()
+                    showingEndConfirmation = true
+                } label: {
+                    HStack {
+                        Image(systemName: "stop.circle.fill")
+                        Text("End Trail")
+                    }
+                }
+                .buttonStyle(PrimaryButtonStyle(isDestructive: true))
+                .accessibilityLabel("End trail and save trip")
             }
-            
-            // End button
-            Button {
-                showingEndConfirmation = true
-            } label: {
-                Text("End Trail")
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
-            }
+            .padding(.horizontal, DesignSystem.Spacing.md)
+            .padding(.bottom, DesignSystem.Spacing.md)
         }
         .onAppear {
             // Clear any leftover GPS points from previous trips
