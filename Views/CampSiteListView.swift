@@ -36,6 +36,18 @@ struct CampSiteListView: View {
             if showingMap {
                 MapView(campSites: filteredSites)
                     .edgesIgnoringSafeArea(.all)
+            } else if filteredSites.isEmpty {
+                VStack(spacing: 20) {
+                    Image(systemName: "tent.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.secondary)
+                    Text(store.campSites.isEmpty ? "No Camp Sites Yet" : "No Matching Sites")
+                        .font(.title2.bold())
+                    Text(store.campSites.isEmpty ? "Mark your first camp site during a trail!" : "Try adjusting your filters")
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
             } else {
                 List(filteredSites) { site in
                     NavigationLink(destination: CampSiteDetailView(campSite: site)) {

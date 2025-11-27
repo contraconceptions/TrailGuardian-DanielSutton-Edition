@@ -6,16 +6,45 @@ struct HistoryView: View {
     @State private var tripToDelete: Trip?
 
     var body: some View {
-        List {
-            ForEach(store.trips) { trip in
+        Group {
+            if store.trips.isEmpty {
+                VStack(spacing: 20) {
+                    Image(systemName: "map.fill")
+                        .font(.system(size: 60))
+                        .foregroundColor(.secondary)
+                    Text("No Trails Yet")
+                        .font(.title2.bold())
+                    Text("Start your first trail to see it here!")
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding()
+            } else {
+                List {
+                    ForEach(store.trips) { trip in
                 NavigationLink(destination: EndSummaryView(trip: trip)) {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(trip.title)
                             .font(.headline)
                         HStack {
-                            Text("Sutton Score: \(trip.difficultyRatings.suttonScore)/100")
-                                .font(.subheadline)
-                                .foregroundColor(.orange)
+                            HStack(spacing: 4) {
+                                Text("\(trip.difficultyRatings.suttonScore)")
+                                    .font(.title3.bold())
+                                    .foregroundColor(DifficultyColorHelper.colorForScore(trip.difficultyRatings.suttonScore))
+                                Text("/100")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text("•")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text(DifficultyColorHelper.descriptionForScore(trip.difficultyRatings.suttonScore))
+                                    .font(.caption)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 2)
+                                    .background(DifficultyColorHelper.backgroundColorForScore(trip.difficultyRatings.suttonScore))
+                                    .foregroundColor(DifficultyColorHelper.colorForScore(trip.difficultyRatings.suttonScore))
+                                    .cornerRadius(4)
+                            }
                             Spacer()
                             Text(trip.difficultyRatings.wellsRating)
                                 .font(.caption)
@@ -49,6 +78,8 @@ struct HistoryView: View {
                     } label: {
                         Label("Delete", systemImage: "trash")
                     }
+                }
+            }
                 }
             }
         }
