@@ -10,6 +10,8 @@ An iOS app for off-roading and camping enthusiasts that tracks trails with profe
 
 Trail Guardian is a personalized iOS application built specifically for Daniel Sutton's off-roading and camping adventures. This app combines GPS tracking, motion telemetry, weather data, and vehicle integration to create comprehensive trail records with difficulty ratings inspired by skiing and Jeep trail systems.
 
+**Built with production-grade architecture** following Apple's Human Interface Guidelines, featuring MVVM design patterns, comprehensive accessibility support, haptic feedback, and a professional design system. See [Recent Enhancements](#-recent-enhancements) for details.
+
 ### Key Features
 
 #### 🛣️ Trail Tracking
@@ -264,23 +266,27 @@ To enable any service, open the corresponding file and look for `// TODO:` comme
 ```
 TrailGuardian-DanielSutton-Edition/
 ├── TrailGuardianApp.swift          # App entry point
-├── Models/                          # Data models & business logic (16 files)
+├── Models/                          # Data models & business logic (20+ files)
 │   ├── Trip.swift                   # Trip data with computed stats
 │   ├── CampSite.swift              # Camp site data model
 │   ├── TripStore.swift             # Trip persistence
 │   ├── CampSiteStore.swift         # Camp site persistence
 │   ├── DifficultyCalculator.swift  # Difficulty rating engine
 │   ├── AltitudeFusionEngine.swift  # GPS + barometer fusion
-│   ├── Constants.swift             # Centralized constants
+│   ├── Constants.swift             # Centralized constants (zero magic numbers)
 │   ├── PhotoHelper.swift           # Photo compression utilities
+│   ├── DesignSystem.swift          # HIG-compliant design system (NEW)
+│   ├── HapticManager.swift         # Haptic feedback system (NEW)
+│   ├── TrackViewModel.swift        # MVVM for TrackView (NEW)
+│   ├── CampSiteCaptureViewModel.swift  # MVVM for camp site capture (NEW)
 │   └── ...
 ├── Views/                           # SwiftUI views (11 files)
-│   ├── StartView.swift             # Home screen
-│   ├── TrackView.swift             # Active tracking
+│   ├── StartView.swift             # Home screen (HIG enhanced)
+│   ├── TrackView.swift             # Active tracking (telemetry dashboard)
 │   ├── EndSummaryView.swift        # Trip summary
-│   ├── HistoryView.swift           # Trip history
-│   ├── CampSiteCaptureView.swift   # Add camp site
-│   ├── CampSiteListView.swift      # Browse camp sites
+│   ├── HistoryView.swift           # Trip history (empty states, badges)
+│   ├── CampSiteCaptureView.swift   # Add camp site (icon labels, ratings)
+│   ├── CampSiteListView.swift      # Browse camp sites (filters, search)
 │   └── ...
 └── Services/                        # External integrations (13 files)
     ├── GPSManager.swift            # Core Location wrapper
@@ -298,6 +304,98 @@ TrailGuardian-DanielSutton-Edition/
 5. User ends trip → `buildTrip()` compiles all data
 6. `DifficultyCalculator` runs scoring algorithm
 7. Trip saved to `trips.json` → temp file cleared
+
+---
+
+## ✨ Recent Enhancements
+
+Trail Guardian has undergone significant architectural and UX improvements to deliver a **premium, production-ready experience**:
+
+### 🎨 Apple Human Interface Guidelines Implementation
+Complete UI/UX overhaul following Apple's official design standards:
+
+#### DesignSystem (`Models/DesignSystem.swift`)
+- **8pt Grid Spacing System** - Consistent spacing throughout (xxs: 4pt → xxl: 48pt)
+- **Semantic Colors** - Named colors instead of hardcoded values (`Colors.suttonScore`, `Colors.startTrail`, etc.)
+- **SF Symbols Constants** - Centralized icon library (`Icons.trail`, `Icons.elevation`, etc.)
+- **Button Styles** - PrimaryButtonStyle, SecondaryButtonStyle, TertiaryButtonStyle with 44pt minimum touch targets
+- **Reusable Components** - MetricCard, StatusBadge, LoadingIndicator, EmptyStateView, CardModifier
+- **Animation Curves** - Standardized timing (quick: 0.2s, standard: 0.3s, slow: 0.5s)
+
+#### Enhanced Views
+- **StartView** - Hero icon, weather card, loading states, clear visual hierarchy
+- **TrackView** - 3-column MetricCard grid, motion telemetry dashboard, prominent airborne warnings
+- **HistoryView** - Beautiful empty states, difficulty badges, SF Symbol stats, swipe-to-delete with haptics
+- **CampSiteCaptureView** - Icon labels, visual star ratings, photo count badges, comprehensive accessibility
+- **CampSiteListView** - Feature badges (fire/water), smart empty states for search results
+
+#### Accessibility Features
+- **VoiceOver Support** - Descriptive labels on all interactive elements
+- **44pt Touch Targets** - Meets Apple's minimum size requirement throughout
+- **Dynamic Type** - All text uses semantic fonts that scale with user preferences
+- **Accessibility Hints** - Contextual hints for disabled states and complex interactions
+- **Element Grouping** - Related elements combined for better screen reader navigation
+
+### 🏗️ MVVM Architecture
+Professional separation of concerns with dedicated ViewModels:
+
+#### TrackViewModel (`Models/TrackViewModel.swift`)
+- **@MainActor** - Ensures all UI updates happen on main thread
+- **Auto-save with Cancellation** - Task-based auto-save that properly cancels on view disappear
+- **GPS Lock Monitoring** - Published loading state for responsive UI
+- **Weather Fetching** - Async weather with timeout handling
+- **Crash Recovery** - Restores interrupted trips from temp storage
+- **Trip Building** - Compiles GPS points, motion data, difficulty ratings
+- **Haptic Integration** - Success feedback on major events (trip completion, 100 Club achievement)
+
+#### CampSiteCaptureViewModel (`Models/CampSiteCaptureViewModel.swift`)
+- **@MainActor** - Thread-safe state management
+- **Async Photo Processing** - Non-blocking photo loading with progress state
+- **Validation with Errors** - Published error messages for UI alerts
+- **Compressed Photo Saving** - Automatic compression (saves 70-80% storage)
+- **Weather Snapshot** - Captures current conditions at camp site
+- **Haptic Feedback** - Success/error feedback on save operations
+
+### 📳 HapticManager
+Premium tactile feedback throughout the app:
+- **7 Feedback Types** - Light, Medium, Heavy, Success, Warning, Error, Selection
+- **Strategic Integration** - Saves, deletions, list edits, achievements, validation errors
+- **Consistent Feel** - Unified haptic language across all features
+- **File**: `Models/HapticManager.swift`
+
+### 🎯 Interaction Patterns
+Following iOS best practices:
+- **Loading States** - Consistent indicators for GPS, weather, photos, saving
+- **Empty States** - Beautiful, actionable empty states with icons and CTAs
+- **Smooth Animations** - Button press (scale to 98%), opacity changes, standard iOS transitions
+- **Error Reporting** - User-friendly messages, published errors for UI alerts
+- **Haptic Feedback** - Premium tactile responses throughout
+
+### 📊 Enhanced Data Integrity
+Comprehensive validation and safety:
+- **TripPoint Validation** - `isValidCoordinate`, `isValidAltitude`, `hasFiniteValues`, `isValid`
+- **CampSite Validation** - Coordinate, elevation, ratings, photo count checks
+- **Pre-save Validation** - Stores refuse invalid data with error messages
+- **Load-time Filtering** - Automatically skips corrupted entries
+- **NaN/Infinity Protection** - All numeric inputs validated with `.isFinite`
+- **Photo Cleanup** - Automatic deletion of orphaned photo files
+
+### 🔒 Thread Safety & Memory Management
+Production-grade reliability:
+- **@MainActor ViewModels** - All UI updates guaranteed on main thread
+- **Task Cancellation** - Proper cleanup on view disappear (auto-save, weather fetching)
+- **Weak Self Captures** - Prevents retain cycles in async closures
+- **Buffer Limits** - Motion snapshots capped at 7,200 (prevents memory exhaustion)
+- **Resource Cleanup** - GPS/motion sensors stopped, timers invalidated, temp files cleared
+
+### 📚 Documentation
+Comprehensive guides for development and deployment:
+- **HIG_IMPROVEMENTS.md** - Complete design system and UI/UX documentation
+- **PRODUCTION_READINESS.md** - Production checklist with testing guide
+- **IMPROVEMENTS.md** - Technical hardening and validation details
+- **Constants.swift** - Zero magic numbers, all configuration centralized
+
+**For detailed information on the design system and UI improvements, see `HIG_IMPROVEMENTS.md`.**
 
 ---
 
