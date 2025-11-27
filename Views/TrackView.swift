@@ -15,6 +15,7 @@ struct TrackView: View {
     @State private var showingEasterEgg = false
     @State private var showingBroncoControls = false
     @State private var showingCampSiteCapture = false
+    @State private var showingEndConfirmation = false
     @State private var isLoadingWeather = true
     @State private var isLoadingGPS = true
     @State private var autoSaveTimer: Timer?
@@ -147,7 +148,9 @@ struct TrackView: View {
             }
             
             // End button
-            NavigationLink(destination: EndSummaryView(trip: buildTrip())) {
+            Button {
+                showingEndConfirmation = true
+            } label: {
                 Text("End Trail")
                     .padding()
                     .frame(maxWidth: .infinity)
@@ -157,6 +160,9 @@ struct TrackView: View {
             }
         }
         .onAppear {
+            // Clear any leftover GPS points from previous trips
+            gps.clearTrailPoints()
+
             // Check for temp trip from crash recovery
             if let tempTrip = TripStore.shared.loadTempTrip() {
                 trip = tempTrip
@@ -219,6 +225,12 @@ struct TrackView: View {
             Button("Awesome!") { }
         } message: {
             Text("You've unlocked the 100 Club! Daniel Sutton would be proud.")
+        }
+        .alert("End Trail?", isPresented: $showingEndConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            NavigationLink("End Trail", destination: EndSummaryView(trip: buildTrip()))
+        } message: {
+            Text("Are you sure you want to end this trail? Your progress will be saved.")
         }
     }
     

@@ -37,7 +37,8 @@ struct CampSiteCaptureView: View {
     @State private var waterPotable: Bool = false
     @State private var waterNotes: String = ""
     @State private var showingWaterSource = false
-    
+    @State private var isSaving = false
+
     var associatedTripID: UUID?
     
     var body: some View {
@@ -233,10 +234,14 @@ struct CampSiteCaptureView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveCampSite()
+                    if isSaving {
+                        ProgressView()
+                    } else {
+                        Button("Save") {
+                            saveCampSite()
+                        }
+                        .disabled(name.isEmpty)
                     }
-                    .disabled(name.isEmpty)
                 }
             }
             .sheet(isPresented: $showingWaterSource) {
@@ -261,45 +266,52 @@ struct CampSiteCaptureView: View {
     }
     
     private func saveCampSite() {
-        // Save photos to documents directory with compression
-        var photoPaths: [String] = []
+        isSaving = true
 
-        for data in photoData {
-            // Compress photo before saving
-            if let compressedData = PhotoHelper.compressPhoto(data),
-               let filename = PhotoHelper.savePhoto(compressedData) {
-                photoPaths.append(filename)
+        Task {
+            // Save photos to documents directory with compression
+            var photoPaths: [String] = []
+
+            for data in photoData {
+                // Compress photo before saving
+                if let compressedData = PhotoHelper.compressPhoto(data),
+                   let filename = PhotoHelper.savePhoto(compressedData) {
+                    photoPaths.append(filename)
+                }
+            }
+
+            let campSite = CampSite(
+                name: name,
+                timestamp: Date(),
+                latitude: latitude,
+                longitude: longitude,
+                elevation: elevation,
+                photos: photoPaths,
+                description: description.isEmpty ? nil : description,
+                waterSource: waterSource,
+                hasFireRing: hasFireRing,
+                wildlifeSightings: wildlifeSightings,
+                accessibilityRating: accessibilityRating,
+                starRating: starRating,
+                difficultyToReach: difficultyToReach,
+                privacyLevel: privacyLevel,
+                weather: weather.currentWeather,
+                terrainType: terrainType,
+                groundConditions: groundConditions,
+                requiredGear: requiredGear,
+                recommendedGear: recommendedGear,
+                cellService: cellService,
+                nearestRoad: nearestRoad.isEmpty ? nil : nearestRoad,
+                emergencyAccessNotes: emergencyAccessNotes.isEmpty ? nil : emergencyAccessNotes,
+                associatedTripID: associatedTripID
+            )
+
+            await MainActor.run {
+                store.add(campSite)
+                isSaving = false
+                dismiss()
             }
         }
-        
-        let campSite = CampSite(
-            name: name,
-            timestamp: Date(),
-            latitude: latitude,
-            longitude: longitude,
-            elevation: elevation,
-            photos: photoPaths,
-            description: description.isEmpty ? nil : description,
-            waterSource: waterSource,
-            hasFireRing: hasFireRing,
-            wildlifeSightings: wildlifeSightings,
-            accessibilityRating: accessibilityRating,
-            starRating: starRating,
-            difficultyToReach: difficultyToReach,
-            privacyLevel: privacyLevel,
-            weather: weather.currentWeather,
-            terrainType: terrainType,
-            groundConditions: groundConditions,
-            requiredGear: requiredGear,
-            recommendedGear: recommendedGear,
-            cellService: cellService,
-            nearestRoad: nearestRoad.isEmpty ? nil : nearestRoad,
-            emergencyAccessNotes: emergencyAccessNotes.isEmpty ? nil : emergencyAccessNotes,
-            associatedTripID: associatedTripID
-        )
-        
-        store.add(campSite)
-        dismiss()
     }
 }
 

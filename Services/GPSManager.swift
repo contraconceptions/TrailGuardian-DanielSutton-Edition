@@ -52,7 +52,11 @@ class GPSManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     func stop() {
         manager.stopUpdatingLocation()
     }
-    
+
+    func clearTrailPoints() {
+        trailPoints.removeAll()
+    }
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let loc = locations.last else { return }
         // Filter out poor quality readings: horizontalAccuracy < 0 indicates invalid,

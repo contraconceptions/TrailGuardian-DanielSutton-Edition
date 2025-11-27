@@ -82,12 +82,16 @@ class WeatherManager: ObservableObject {
                     conditionString = "Unknown"
                 }
                 
+                // Convert precipitation from mm/hr to inches for consistency with Constants
+                let precipMm = weather.currentWeather.precipitation?.intensity.convertedTo(unit: .millimetersPerHour).value ?? 0
+                let precipInches = precipMm / 25.4 // 1 inch = 25.4 mm
+
                 currentWeather = WeatherSnapshot(
                     timestamp: Date(),
                     temperature: weather.currentWeather.temperature.convertedTo(unit: .celsius).value,
                     condition: conditionString,
                     windSpeed: weather.currentWeather.wind.speed.convertedTo(unit: .kilometersPerHour).value,
-                    precipitation: weather.currentWeather.precipitation?.intensity.convertedTo(unit: .millimetersPerHour).value ?? 0
+                    precipitation: precipInches
                 )
                 weatherError = nil
             }
