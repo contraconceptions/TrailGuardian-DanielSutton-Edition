@@ -6,13 +6,34 @@ struct EndSummaryView: View {
     let trip: Trip
     @State private var mapSnapshot: UIImage?
     @State private var pdfData: Data?
+    @State private var editedTrip: Trip
+    @State private var showingNameEditor = false
+    @State private var isGeneratingPDF = false
+
+    init(trip: Trip) {
+        self.trip = trip
+        _editedTrip = State(initialValue: trip)
+    }
     
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 Text("Trail Complete!")
                     .font(.largeTitle)
-                
+
+                // Trip Name with Edit Button
+                HStack {
+                    Text(editedTrip.title)
+                        .font(.title2.bold())
+                    Button {
+                        showingNameEditor = true
+                    } label: {
+                        Image(systemName: "pencil.circle.fill")
+                            .foregroundColor(.blue)
+                    }
+                }
+                .padding(.horizontal)
+
                 RouteMapView(points: trip.points)
                     .frame(height: 300)
                     .cornerRadius(12)
@@ -22,18 +43,73 @@ struct EndSummaryView: View {
                     }
                 
                 // Difficulty Badges
-                VStack(alignment: .leading) {
-                    Text("Ratings")
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Difficulty Ratings")
                         .font(.headline)
-                    Text("Sutton Score: \(trip.difficultyRatings.suttonScore)/100")
-                    Text("Jeep Badge: \(trip.difficultyRatings.jeepBadge)/10")
-                    Text("Wells: \(trip.difficultyRatings.wellsRating)")
-                    Text("USFS: \(trip.difficultyRatings.usfsRating)")
-                    Text("International: \(trip.difficultyRatings.international)")
+
+                    // Sutton Score - Large Badge
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Sutton Score")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                                Text("\(trip.difficultyRatings.suttonScore)")
+                                    .font(.system(size: 42, weight: .bold))
+                                    .foregroundColor(DifficultyColorHelper.colorForScore(trip.difficultyRatings.suttonScore))
+                                Text("/100")
+                                    .font(.title3)
+                                    .foregroundColor(.secondary)
+                            }
+                            Text(DifficultyColorHelper.descriptionForScore(trip.difficultyRatings.suttonScore))
+                                .font(.subheadline.bold())
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 4)
+                                .background(DifficultyColorHelper.backgroundColorForScore(trip.difficultyRatings.suttonScore))
+                                .foregroundColor(DifficultyColorHelper.colorForScore(trip.difficultyRatings.suttonScore))
+                                .cornerRadius(6)
+                        }
+                        Spacer()
+                    }
+
+                    Divider()
+
+                    // Other Rating Systems
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text("Jeep Badge:")
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text("\(trip.difficultyRatings.jeepBadge)/10")
+                                .bold()
+                        }
+                        HStack {
+                            Text("Wells Rating:")
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(trip.difficultyRatings.wellsRating)
+                                .bold()
+                        }
+                        HStack {
+                            Text("USFS Rating:")
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(trip.difficultyRatings.usfsRating)
+                                .bold()
+                        }
+                        HStack {
+                            Text("International:")
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Text(trip.difficultyRatings.international)
+                                .bold()
+                        }
+                    }
+                    .font(.subheadline)
                 }
                 .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(8)
+                .background(DifficultyColorHelper.backgroundColorForScore(trip.difficultyRatings.suttonScore))
+                .cornerRadius(12)
                 
                 // Bronco Configuration
                 if trip.vehicleData.vehicleType == .bronco {
@@ -171,25 +247,40 @@ struct EndSummaryView: View {
                 }
                 
                 Button("Save Trip") {
-                    store.add(trip)
+                    store.add(editedTrip)
+                    // Clear temp trip file to prevent false crash recovery
+                    store.clearTempTrip()
                 }
                 .buttonStyle(.borderedProminent)
                 
                 Button("Export PDF") {
-                    if let image = mapSnapshot, let pdf = PDFExporter.generatePDF(for: trip, mapSnapshot: image) {
-                        pdfData = pdf
-                    } else {
-                        // Fallback: create a simple placeholder image if map snapshot failed
-                        let placeholder = UIImage(systemName: "map")?.withTintColor(.orange, renderingMode: .alwaysOriginal) ?? UIImage()
-                        if let fallbackPdf = PDFExporter.generatePDF(for: trip, mapSnapshot: placeholder) {
-                            pdfData = fallbackPdf
+                    isGeneratingPDF = true
+                    Task {
+                        if let image = mapSnapshot, let pdf = PDFExporter.generatePDF(for: trip, mapSnapshot: image) {
+                            pdfData = pdf
                         } else {
-                            // If PDF generation completely fails, show error or handle gracefully
-                            print("PDF generation failed even with fallback image")
+                            // Fallback: create a simple placeholder image if map snapshot failed
+                            let placeholder = UIImage(systemName: "map")?.withTintColor(.orange, renderingMode: .alwaysOriginal) ?? UIImage()
+                            if let fallbackPdf = PDFExporter.generatePDF(for: trip, mapSnapshot: placeholder) {
+                                pdfData = fallbackPdf
+                            } else {
+                                // If PDF generation completely fails, show error or handle gracefully
+                                print("PDF generation failed even with fallback image")
+                            }
                         }
+                        isGeneratingPDF = false
                     }
                 }
                 .buttonStyle(.bordered)
+                .disabled(isGeneratingPDF)
+
+                if isGeneratingPDF {
+                    HStack {
+                        ProgressView()
+                        Text("Generating PDF...")
+                            .foregroundColor(.secondary)
+                    }
+                }
                 
                 if let data = pdfData {
                     ShareLink("Share PDF", item: data, preview: .init("Daniel's Trail Summary"))
@@ -206,5 +297,28 @@ struct EndSummaryView: View {
             .padding()
         }
         .navigationTitle(trip.title)
+        .sheet(isPresented: $showingNameEditor) {
+            NavigationView {
+                Form {
+                    TextField("Trail Name", text: $editedTrip.title)
+                }
+                .navigationTitle("Edit Trail Name")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            editedTrip.title = trip.title
+                            showingNameEditor = false
+                        }
+                    }
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") {
+                            showingNameEditor = false
+                        }
+                        .disabled(editedTrip.title.isEmpty)
+                    }
+                }
+            }
+        }
     }
 }
