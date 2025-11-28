@@ -1,13 +1,10 @@
 import SwiftUI
-import UIKit
 
-/// UIActivityViewController wrapper for sharing content
-struct ShareSheet: UIViewControllerRepresentable {
-    let items: [Any]
+struct ShareSheet: View {
+    let message: String
 
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    var body: some View {
+        Text(message)
+            .padding()
     }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

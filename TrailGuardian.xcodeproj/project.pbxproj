@@ -20,13 +20,14 @@
 		A1000008001 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000008000 /* DesignSystem.swift */; };
 		A1000009001 /* DifficultyCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000009000 /* DifficultyCalculator.swift */; };
 		A1000010001 /* DifficultyColorHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000010000 /* DifficultyColorHelper.swift */; };
-		A1000011001 /* EmergencyKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000011000 /* EmergencyKit.swift */; };
-		A1000012001 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000012000 /* HapticManager.swift */; };
-		A1000013001 /* Moment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000013000 /* Moment.swift */; };
-		A1000014001 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000014000 /* PDFExporter.swift */; };
-		A1000015001 /* PhotoHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000015000 /* PhotoHelper.swift */; };
-		A1000016001 /* TrackViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000016000 /* TrackViewModel.swift */; };
-		A1000017001 /* TrailMapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000017000 /* TrailMapManager.swift */; };
+                A1000011001 /* EmergencyKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000011000 /* EmergencyKit.swift */; };
+                A1000012001 /* HapticManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000012000 /* HapticManager.swift */; };
+                A1000013001 /* Moment.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000013000 /* Moment.swift */; };
+                A1000014001 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000014000 /* PDFExporter.swift */; };
+                A1000015001 /* PhotoHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000015000 /* PhotoHelper.swift */; };
+                A1000015501 /* SampleData.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000015500 /* SampleData.swift */; };
+                A1000016001 /* TrackViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000016000 /* TrackViewModel.swift */; };
+                A1000017001 /* TrailMapManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000017000 /* TrailMapManager.swift */; };
 		A1000018001 /* Trip.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000018000 /* Trip.swift */; };
 		A1000019001 /* TripPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000019000 /* TripPoint.swift */; };
 		A1000020001 /* TripStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1000020000 /* TripStore.swift */; };
@@ -82,13 +83,14 @@
 		A1000008000 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
 		A1000009000 /* DifficultyCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DifficultyCalculator.swift; sourceTree = "<group>"; };
 		A1000010000 /* DifficultyColorHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DifficultyColorHelper.swift; sourceTree = "<group>"; };
-		A1000011000 /* EmergencyKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencyKit.swift; sourceTree = "<group>"; };
-		A1000012000 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
-		A1000013000 /* Moment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Moment.swift; sourceTree = "<group>"; };
-		A1000014000 /* PDFExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExporter.swift; sourceTree = "<group>"; };
-		A1000015000 /* PhotoHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoHelper.swift; sourceTree = "<group>"; };
-		A1000016000 /* TrackViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackViewModel.swift; sourceTree = "<group>"; };
-		A1000017000 /* TrailMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailMapManager.swift; sourceTree = "<group>"; };
+                A1000011000 /* EmergencyKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmergencyKit.swift; sourceTree = "<group>"; };
+                A1000012000 /* HapticManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HapticManager.swift; sourceTree = "<group>"; };
+                A1000013000 /* Moment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Moment.swift; sourceTree = "<group>"; };
+                A1000014000 /* PDFExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFExporter.swift; sourceTree = "<group>"; };
+                A1000015000 /* PhotoHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoHelper.swift; sourceTree = "<group>"; };
+                A1000015500 /* SampleData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleData.swift; sourceTree = "<group>"; };
+                A1000016000 /* TrackViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackViewModel.swift; sourceTree = "<group>"; };
+                A1000017000 /* TrailMapManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrailMapManager.swift; sourceTree = "<group>"; };
 		A1000018000 /* Trip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Trip.swift; sourceTree = "<group>"; };
 		A1000019000 /* TripPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripPoint.swift; sourceTree = "<group>"; };
 		A1000020000 /* TripStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripStore.swift; sourceTree = "<group>"; };
@@ -184,9 +186,10 @@
 				A1000011000 /* EmergencyKit.swift */,
 				A1000012000 /* HapticManager.swift */,
 				A1000013000 /* Moment.swift */,
-				A1000014000 /* PDFExporter.swift */,
-				A1000015000 /* PhotoHelper.swift */,
-				A1000016000 /* TrackViewModel.swift */,
+                                A1000014000 /* PDFExporter.swift */,
+                                A1000015000 /* PhotoHelper.swift */,
+                                A1000015500 /* SampleData.swift */,
+                                A1000016000 /* TrackViewModel.swift */,
 				A1000017000 /* TrailMapManager.swift */,
 				A1000018000 /* Trip.swift */,
 				A1000019000 /* TripPoint.swift */,
@@ -326,10 +329,11 @@
 				A1000010001 /* DifficultyColorHelper.swift in Sources */,
 				A1000011001 /* EmergencyKit.swift in Sources */,
 				A1000012001 /* HapticManager.swift in Sources */,
-				A1000013001 /* Moment.swift in Sources */,
-				A1000014001 /* PDFExporter.swift in Sources */,
-				A1000015001 /* PhotoHelper.swift in Sources */,
-				A1000016001 /* TrackViewModel.swift in Sources */,
+                                A1000013001 /* Moment.swift in Sources */,
+                                A1000014001 /* PDFExporter.swift in Sources */,
+                                A1000015001 /* PhotoHelper.swift in Sources */,
+                                A1000015501 /* SampleData.swift in Sources */,
+                                A1000016001 /* TrackViewModel.swift in Sources */,
 				A1000017001 /* TrailMapManager.swift in Sources */,
 				A1000018001 /* Trip.swift in Sources */,
 				A1000019001 /* TripPoint.swift in Sources */,

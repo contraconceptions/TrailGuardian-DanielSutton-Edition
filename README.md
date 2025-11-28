@@ -81,6 +81,11 @@ Supports 10+ vehicle types with Ford Bronco-specific features:
 
 ## 🔧 Setup Instructions
 
+### Quick "lite" build
+
+If you simply want the project to open and run in Xcode without extra capabilities, use the new lightweight demo views. They rely on static sample data (no WeatherKit, CoreLocation, or motion permissions) so the app can compile cleanly before you wire up real services.
+
+
 ### Prerequisites
 - **Mac** with Xcode 15.0 or later
 - **iOS 16.0+** device (iPhone or iPad)
