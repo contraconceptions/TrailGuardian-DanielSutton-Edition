@@ -45,7 +45,7 @@ Crash recovery system (`TripStore.swift`):
 ```
 .
 ├── TrailGuardianApp.swift          # App entry point
-├── Models/                          # 16 files - Data models & business logic
+├── Models/                          # 23 files - Data models & business logic
 │   ├── Trip.swift                   # Core trip model with computed properties
 │   ├── TripPoint.swift              # Single GPS point with telemetry
 │   ├── TripStore.swift              # Persistence layer for trips
@@ -63,7 +63,7 @@ Crash recovery system (`TripStore.swift`):
 │   ├── TrailMapManager.swift       # Map utilities
 │   ├── Moment.swift                # Point-in-time snapshot
 │   └── EmergencyKit.swift          # Emergency contact/info
-├── Views/                           # 11 files - SwiftUI interface
+├── Views/                           # 12 files - SwiftUI interface
 │   ├── StartView.swift             # Home screen
 │   ├── TrackView.swift             # Active tracking interface
 │   ├── EndSummaryView.swift        # Post-trip summary
@@ -75,7 +75,7 @@ Crash recovery system (`TripStore.swift`):
 │   ├── EmergencyView.swift         # Emergency features
 │   ├── BroncoControlView.swift     # Ford Bronco controls
 │   └── RouteMapView.swift          # Map visualization
-└── Services/                        # 10 files - External integrations
+└── Services/                        # 12 files - External integrations
     ├── GPSManager.swift            # CoreLocation wrapper (ACTIVE)
     ├── MotionManager.swift         # CoreMotion wrapper (ACTIVE)
     ├── FordPassManager.swift       # Ford API (STUB - needs API key)

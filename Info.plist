@@ -30,6 +30,8 @@
     <string>Trail Guardian needs camera access to capture photos during your trail moments.</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>Trail Guardian needs photo library access to save and share your trail photos.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>Trail Guardian uses motion sensors to measure pitch, roll, G-forces, and terrain roughness during your adventures.</string>
     <key>UIBackgroundModes</key>
     <array>
         <string>location</string>
@@ -51,3 +53,4 @@
     </array>
 </dict>
 </plist>
+

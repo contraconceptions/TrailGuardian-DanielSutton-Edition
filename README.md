@@ -96,7 +96,7 @@ If you simply want the project to open and run in Xcode without extra capabiliti
 
 1. **Open the project**
    ```bash
-   cd TrailGuardian-DanielSutton-Edition
+   cd DSTrail
    open TrailGuardian.xcodeproj
    ```
 
@@ -269,7 +269,7 @@ To enable any service, open the corresponding file and look for `// TODO:` comme
 
 ### Project Structure
 ```
-TrailGuardian-DanielSutton-Edition/
+DSTrail/
 ├── TrailGuardianApp.swift          # App entry point
 ├── Models/                          # Data models & business logic (20+ files)
 │   ├── Trip.swift                   # Trip data with computed stats

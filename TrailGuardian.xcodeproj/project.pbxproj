@@ -500,7 +500,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "TrailGuardian.xcodeproj/Info.plist";
+				INFOPLIST_FILE = "Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Trail Guardian";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Trail Guardian uses the camera to capture photos of camp sites and trail conditions.";
@@ -538,7 +538,7 @@
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "TrailGuardian.xcodeproj/Info.plist";
+				INFOPLIST_FILE = "Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Trail Guardian";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSCameraUsageDescription = "Trail Guardian uses the camera to capture photos of camp sites and trail conditions.";

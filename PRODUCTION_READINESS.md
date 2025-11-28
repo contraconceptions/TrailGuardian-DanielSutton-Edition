@@ -420,7 +420,9 @@ NavigationStack {
 
 ---
 
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-11-27
 **Status:** ✅ **READY FOR XCODE**
-**Next Step:** Open in Xcode, add Info.plist keys, build, and test!
+**Next Step:** Open in Xcode, enable capabilities (Background Modes, WeatherKit), configure signing, build, and test!
+
+**Note:** All required Info.plist privacy keys (including NSMotionUsageDescription) are now present.
 
